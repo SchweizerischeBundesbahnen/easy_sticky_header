@@ -6,6 +6,7 @@
 
 import 'dart:math' show min, max;
 
+import 'package:easy_sticky_header/src/sticky_footer_widget.dart';
 import 'package:flutter/material.dart';
 
 import 'sticky_header_info.dart';
@@ -29,12 +30,10 @@ class StickyHeaderController extends ChangeNotifier {
   ///
   /// With the help of the existing sticky header information, you can
   /// jump to the header widget of the specified index.
-  final Map<int, StickyHeaderInfo> _stickyHeaderInfoMap =
-      <int, StickyHeaderInfo>{};
+  final Map<int, StickyHeaderInfo> _stickyHeaderInfoMap = <int, StickyHeaderInfo>{};
 
   /// Cache of sticky header information callbacks.
-  final List<StickyHeaderInfoCallback> _stickyHeaderInfoCallbackList =
-      <StickyHeaderInfoCallback>[];
+  final List<StickyHeaderInfoCallback> _stickyHeaderInfoCallbackList = <StickyHeaderInfoCallback>[];
 
   /// When the value of the [useStickyAmount] property is set to true, the
   /// sticky amount of the header widget will be automatically calculated.
@@ -52,6 +51,13 @@ class StickyHeaderController extends ChangeNotifier {
   ///
   /// * [StickyHeaderWidget], which uses this build sticky header.
   StickyHeaderInfo? currentStickyHeaderInfo;
+
+  /// Current sticky footer information.
+  ///
+  /// See also:
+  ///
+  /// * [StickyFooterWidget], which uses this build sticky footer.
+  StickyHeaderInfo? currentStickyFooterInfo;
 
   /// Current child sticky header information.
   ///
@@ -90,8 +96,7 @@ class StickyHeaderController extends ChangeNotifier {
   bool get isJumping => _isJumping;
 
   bool get isReverse =>
-      _scrollPosition?.axisDirection == AxisDirection.up ||
-      _scrollPosition?.axisDirection == AxisDirection.left;
+      _scrollPosition?.axisDirection == AxisDirection.up || _scrollPosition?.axisDirection == AxisDirection.left;
 
   bool get isHorizontalAxis => _scrollPosition?.axis == Axis.horizontal;
 
@@ -123,8 +128,7 @@ class StickyHeaderController extends ChangeNotifier {
     currentChildStickyHeaderInfo = null;
     currentOffset = Offset.zero;
     // Find current sticky header and calculate offset.
-    if (stickyHeaderInfoList.isNotEmpty &&
-        _isNeedsStickyHeader(stickyHeaderInfoList)) {
+    if (stickyHeaderInfoList.isNotEmpty && _isNeedsStickyHeader(stickyHeaderInfoList)) {
       for (var i = 0; i < stickyHeaderInfoList.length; i++) {
         var stickyHeaderInfo = stickyHeaderInfoList[i];
         if (_isValidStickyHeader(stickyHeaderInfo)) {
@@ -143,17 +147,13 @@ class StickyHeaderController extends ChangeNotifier {
               if (parentIndex != null) {
                 currentStickyHeaderInfo = _stickyHeaderInfoMap[parentIndex];
                 currentChildStickyHeaderInfo = stickyHeaderInfo;
-                if (stickyHeaderInfo.parentIndex !=
-                    nextStickyHeaderInfo.parentIndex) {
-                  currentOffset =
-                      _calculateOffset(stickyHeaderInfo, nextStickyHeaderInfo);
+                if (stickyHeaderInfo.parentIndex != nextStickyHeaderInfo.parentIndex) {
+                  currentOffset = _calculateOffset(stickyHeaderInfo, nextStickyHeaderInfo);
                 }
               } else {
                 currentStickyHeaderInfo = stickyHeaderInfo;
-                if (stickyHeaderInfo.index !=
-                    nextStickyHeaderInfo.parentIndex) {
-                  currentOffset =
-                      _calculateOffset(stickyHeaderInfo, nextStickyHeaderInfo);
+                if (stickyHeaderInfo.index != nextStickyHeaderInfo.parentIndex) {
+                  currentOffset = _calculateOffset(stickyHeaderInfo, nextStickyHeaderInfo);
                 }
               }
               break;
@@ -167,8 +167,36 @@ class StickyHeaderController extends ChangeNotifier {
       _calculateStickyAmount(stickyHeaderInfoList);
     }
     _findHeaderWidget();
+
+    _calculateStickyFooter();
+
     // Update sticky header.
     notifyListeners();
+  }
+
+  _calculateStickyFooter() {
+    if (_stickyHeaderInfoMap.isEmpty || _scrollPosition == null) {
+      return;
+    }
+
+    var stickyHeaderList = _stickyHeaderInfoMap.values.toList();
+    StickyHeaderInfo? stickyFooterInfo;
+    if (currentStickyHeaderInfo == null) {
+      stickyFooterInfo = stickyHeaderList.length > 1 ? stickyHeaderList[1] : stickyHeaderList[0];
+    } else {
+      var stickyHeaderIndex = stickyHeaderList.indexOf(currentStickyHeaderInfo!);
+      if (stickyHeaderIndex < stickyHeaderList.length - 1) {
+        stickyFooterInfo = stickyHeaderList[stickyHeaderIndex + 1];
+      }
+    }
+
+    if (stickyFooterInfo != null &&
+        stickyFooterInfo.pixels >
+            _scrollPosition!.pixels + _scrollPosition!.viewportDimension - getDimension(stickyFooterInfo.size)) {
+      currentStickyFooterInfo = stickyFooterInfo;
+    } else {
+      currentStickyFooterInfo = null;
+    }
   }
 
   /// In some cases sticky header is not required,
@@ -192,8 +220,7 @@ class StickyHeaderController extends ChangeNotifier {
 
   /// Calculates the offset at which the header widget should stuck to
   /// the starting position.
-  Offset _calculateOffset(StickyHeaderInfo stickyHeaderInfo,
-      StickyHeaderInfo nextStickyHeaderInfo) {
+  Offset _calculateOffset(StickyHeaderInfo stickyHeaderInfo, StickyHeaderInfo nextStickyHeaderInfo) {
     var d = 0.0;
     // ±0.2: Which to reduce fluctuations and optimize the scrolling experience.
     if (isReverse) {
@@ -201,8 +228,7 @@ class StickyHeaderController extends ChangeNotifier {
       d = d - 0.2;
       d = max(getViewportDimension - getDimension(stickyHeaderInfo.size), d);
     } else {
-      d = getComponent(nextStickyHeaderInfo.offset) -
-          getDimension(stickyHeaderInfo.size);
+      d = getComponent(nextStickyHeaderInfo.offset) - getDimension(stickyHeaderInfo.size);
       d = d + 0.2;
       d = min(0.0, d);
     }
@@ -212,11 +238,8 @@ class StickyHeaderController extends ChangeNotifier {
   /// When the scroll direction is reversed, the default offset cannot be zero,
   /// and additional processing is required.
   void _handleReverse() {
-    if (isReverse &&
-        currentStickyHeaderInfo != null &&
-        currentOffset == Offset.zero) {
-      var d =
-          getViewportDimension - getDimension(currentStickyHeaderInfo?.size);
+    if (isReverse && currentStickyHeaderInfo != null && currentOffset == Offset.zero) {
+      var d = getViewportDimension - getDimension(currentStickyHeaderInfo?.size);
       currentOffset = isHorizontalAxis ? Offset(d, 0.0) : Offset(0.0, d);
     }
   }
@@ -229,25 +252,20 @@ class StickyHeaderController extends ChangeNotifier {
       var stickyAmount = 0.0;
       if (!_isValidStickyHeader(stickyHeaderInfo)) {
         var value = 0.0;
-        if (stickyHeaderInfo.parentIndex != null &&
-            !stickyHeaderInfo.overlapParent) {
+        if (stickyHeaderInfo.parentIndex != null && !stickyHeaderInfo.overlapParent) {
           value = getDimension(currentStickyHeaderInfo?.size);
         }
-        stickyAmount = (getComponent(stickyHeaderInfo.offset) - value) /
-            getDimension(stickyHeaderInfo.size);
+        stickyAmount = (getComponent(stickyHeaderInfo.offset) - value) / getDimension(stickyHeaderInfo.size);
         stickyAmount = (1.0 - stickyAmount).clamp(0.0, 1.0);
-      } else if ((currentChildStickyHeaderInfo == null &&
-              stickyHeaderInfo == currentStickyHeaderInfo) ||
+      } else if ((currentChildStickyHeaderInfo == null && stickyHeaderInfo == currentStickyHeaderInfo) ||
           stickyHeaderInfo == currentChildStickyHeaderInfo) {
-        nextStickyHeaderIndex =
-            i < stickyHeaderInfoList.length - 1 ? i + 1 : null;
+        nextStickyHeaderIndex = i < stickyHeaderInfoList.length - 1 ? i + 1 : null;
         stickyAmount = 1.0;
       }
       stickyHeaderInfo.stickyAmount = stickyAmount;
     }
     if (nextStickyHeaderIndex != null) {
-      var stickyAmount =
-          stickyHeaderInfoList[nextStickyHeaderIndex].stickyAmount;
+      var stickyAmount = stickyHeaderInfoList[nextStickyHeaderIndex].stickyAmount;
       if (currentChildStickyHeaderInfo != null) {
         currentChildStickyHeaderInfo?.stickyAmount -= stickyAmount;
       } else {
@@ -258,8 +276,7 @@ class StickyHeaderController extends ChangeNotifier {
 
   /// Gets the horizontal or vertical component based on the scroll view's
   /// scroll axis.
-  double getComponent(Offset offset) =>
-      _scrollPosition?.axis == Axis.horizontal ? offset.dx : offset.dy;
+  double getComponent(Offset offset) => _scrollPosition?.axis == Axis.horizontal ? offset.dx : offset.dy;
 
   /// Gets the width or height based on scroll view's scroll axis.
   double getDimension(Size? size) {
@@ -287,8 +304,7 @@ class StickyHeaderController extends ChangeNotifier {
   }
 
   /// Gets sticky header information from cache.
-  StickyHeaderInfo? getStickyHeaderInfo(int index) =>
-      _stickyHeaderInfoMap[index];
+  StickyHeaderInfo? getStickyHeaderInfo(int index) => _stickyHeaderInfoMap[index];
 
   /// Clears the cache, please call when needed.
   void clearStickyHeaderInfo() => _stickyHeaderInfoMap.clear();
@@ -356,8 +372,7 @@ class StickyHeaderController extends ChangeNotifier {
         isJumping = true;
         _scrollPosition?.animateTo(
           pixels,
-          duration:
-              findingStartDuration ?? _getDefaultDuration(pixels, velocity),
+          duration: findingStartDuration ?? _getDefaultDuration(pixels, velocity),
           curve: findingStartCurve ?? Curves.easeIn,
         );
       }

@@ -23,7 +23,7 @@ class Example12 extends StatelessWidget {
             parent: BouncingScrollPhysics(),
           ),
           itemBuilder: (context, index) {
-            if (index % 3 == 0 && index < 6) {
+            if (index % 15 == 0 && index < 35) {
               return StickyContainerWidget(
                 index: index,
                 child: Container(

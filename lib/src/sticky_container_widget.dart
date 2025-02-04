@@ -343,7 +343,7 @@ class _ScrollableStickyContainerBuilderState
       keepScrollOffset: widget.keepScrollOffset,
       debugLabel: widget.debugLabel,
       onAttach: (position) {
-        assert(_positions.length <= 2,
+        assert(_positions.length <= 3,
             'ScrollController attached to multiple scroll views.');
         _isSticking = _positions.length == 2;
         if (_isSticking) {
