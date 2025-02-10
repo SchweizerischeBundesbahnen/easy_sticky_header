@@ -59,6 +59,11 @@ class StickyHeaderController extends ChangeNotifier {
   /// * [StickyFooterWidget], which uses this build sticky footer.
   StickyHeaderInfo? currentStickyFooterInfo;
 
+  /// Sticky index that should be build. -1 if none should be built
+  ///
+  /// * [StickyFooterWidget], which uses this build sticky footer if currentStickyFooterInfo is null
+  int shouldBuildStickyFooterAfterIndex = -1;
+
   /// Current child sticky header information.
   ///
   /// See also:
@@ -182,11 +187,19 @@ class StickyHeaderController extends ChangeNotifier {
     var stickyHeaderList = _stickyHeaderInfoMap.values.toList();
     StickyHeaderInfo? stickyFooterInfo;
     if (currentStickyHeaderInfo == null) {
-      stickyFooterInfo = stickyHeaderList.length > 1 ? stickyHeaderList[1] : stickyHeaderList[0];
+      if (stickyHeaderList.length > 1) {
+        stickyFooterInfo = stickyHeaderList[1];
+        shouldBuildStickyFooterAfterIndex = -1;
+      } else {
+        shouldBuildStickyFooterAfterIndex = 0;
+      }
     } else {
       var stickyHeaderIndex = stickyHeaderList.indexOf(currentStickyHeaderInfo!);
       if (stickyHeaderIndex < stickyHeaderList.length - 1) {
         stickyFooterInfo = stickyHeaderList[stickyHeaderIndex + 1];
+        shouldBuildStickyFooterAfterIndex = -1;
+      } else {
+        shouldBuildStickyFooterAfterIndex = currentStickyHeaderInfo!.index;
       }
     }
 

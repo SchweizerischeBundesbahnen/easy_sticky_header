@@ -4,6 +4,7 @@
 // that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
+import 'package:easy_sticky_header/src/sticky_header.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -22,10 +23,13 @@ class StickyFooterWidget extends StatefulWidget {
 
   final BoxDecoration? footerDecoration;
 
+  final FooterWidgetBuilder? footerBuilder;
+
   const StickyFooterWidget({
     Key? key,
     required this.controller,
     required this.spacing,
+    this.footerBuilder,
     this.footerDecoration,
   }) : super(key: key);
 
@@ -74,21 +78,33 @@ class _StickyFooterWidgetState extends State<StickyFooterWidget> with SingleTick
   @override
   Widget build(BuildContext context) {
     var stickyFooterInfo = widget.controller.currentStickyFooterInfo;
-    return GestureDetector(
-      onPanUpdate: _onPanUpdate,
-      onPanEnd: _onPanEnd,
-      child: Visibility(
-        visible: stickyFooterInfo != null && stickyFooterInfo.visible,
-        child: _buildStickyFooter(stickyFooterInfo),
-      ),
-    );
+    var useBuilder = widget.controller.shouldBuildStickyFooterAfterIndex != -1 && widget.footerBuilder != null;
+    if (useBuilder) {
+      final stickyFooter = widget.footerBuilder!(context, widget.controller.shouldBuildStickyFooterAfterIndex);
+
+      return GestureDetector(
+        onPanUpdate: _onPanUpdate,
+        onPanEnd: _onPanEnd,
+        child: Visibility(
+          visible: stickyFooter != null,
+          child: Container(decoration: widget.footerDecoration, child: stickyFooter),
+        ),
+      );
+    } else {
+      return GestureDetector(
+        onPanUpdate: _onPanUpdate,
+        onPanEnd: _onPanEnd,
+        child: Visibility(
+          visible: stickyFooterInfo != null && stickyFooterInfo.visible,
+          child: _buildStickyFooter(stickyFooterInfo),
+        ),
+      );
+    }
   }
 
   Widget _buildStickyFooter(StickyHeaderInfo? stickyFooterInfo) {
     if (stickyFooterInfo != null) {
-      return Container(
-          decoration: widget.footerDecoration,
-          child: stickyFooterInfo.widget);
+      return Container(decoration: widget.footerDecoration, child: stickyFooterInfo.widget);
     }
     return Container();
   }

@@ -11,6 +11,8 @@ import 'package:flutter/material.dart';
 import 'sticky_header_controller.dart';
 import 'sticky_header_widget.dart';
 
+typedef FooterWidgetBuilder = Widget? Function(BuildContext context, int afterIndex);
+
 /// Sticky Header.
 ///
 /// Wraps a [ListView], [GridView], [CustomScrollView], [SingleChildScrollView]
@@ -83,6 +85,9 @@ class StickyHeader extends StatefulWidget {
   /// Decoration to apply to the footer
   final BoxDecoration? footerDecoration;
 
+  /// Builder for the Footer if it has not yet built in the scrollable child
+  final FooterWidgetBuilder? footerBuilder;
+
   const StickyHeader({
     Key? key,
     this.controller,
@@ -91,6 +96,7 @@ class StickyHeader extends StatefulWidget {
     this.showFooter = false,
     this.footerDecoration =
         const BoxDecoration(boxShadow: [BoxShadow(color: Colors.grey, spreadRadius: 5, blurRadius: 5)]),
+    this.footerBuilder,
     required this.child,
   }) : super(key: key);
 
@@ -168,6 +174,7 @@ class _StickyHeaderState extends State<StickyHeader> {
                 child: StickyFooterWidget(
                   controller: controller,
                   spacing: widget.spacing,
+                  footerBuilder: widget.footerBuilder,
                   footerDecoration: widget.footerDecoration,
                 ),
               )

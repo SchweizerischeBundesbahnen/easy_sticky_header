@@ -17,13 +17,34 @@ class Example12 extends StatelessWidget {
         title: const Text('Infinite list'),
       ),
       body: StickyHeader(
+        showFooter: true,
+        footerBuilder: (context, index) {
+          var nextIndex = index + (30 - (index % 30));
+          if (nextIndex > 70) {
+            return null;
+          }
+          return Container(
+            color: const Color.fromRGBO(255, 105, 0, 1.0),
+            padding: const EdgeInsets.only(left: 16.0),
+            alignment: Alignment.centerLeft,
+            width: double.infinity,
+            height: 50,
+            child: Text(
+              'Header #$nextIndex',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+              ),
+            ),
+          );
+        },
         child: ListView.builder(
           reverse: TestConfig.reverse,
           physics: const AlwaysScrollableScrollPhysics(
             parent: BouncingScrollPhysics(),
           ),
           itemBuilder: (context, index) {
-            if (index % 15 == 0 && index < 35) {
+            if (index % 30 == 0 && index < 70) {
               return StickyContainerWidget(
                 index: index,
                 child: Container(
