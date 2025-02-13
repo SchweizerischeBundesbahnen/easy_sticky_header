@@ -87,7 +87,10 @@ class _StickyFooterWidgetState extends State<StickyFooterWidget> with SingleTick
         onPanEnd: _onPanEnd,
         child: Visibility(
           visible: stickyFooter != null,
-          child: Container(decoration: widget.footerDecoration, child: stickyFooter),
+          child: Container(
+              decoration: widget.footerDecoration,
+              clipBehavior: widget.footerDecoration != null ? Clip.hardEdge : Clip.none,
+              child: stickyFooter),
         ),
       );
     } else {
@@ -105,7 +108,9 @@ class _StickyFooterWidgetState extends State<StickyFooterWidget> with SingleTick
   Widget _buildStickyFooter(StickyHeaderInfo? stickyFooterInfo) {
     if (stickyFooterInfo != null) {
       return Container(
-          decoration: widget.footerDecoration, clipBehavior: Clip.hardEdge, child: stickyFooterInfo.widget);
+          decoration: widget.footerDecoration,
+          clipBehavior: widget.footerDecoration != null ? Clip.hardEdge : Clip.none,
+          child: stickyFooterInfo.widget);
     }
     return Container();
   }

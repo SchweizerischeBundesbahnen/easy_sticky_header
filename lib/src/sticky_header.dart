@@ -152,6 +152,7 @@ class _StickyHeaderState extends State<StickyHeader> {
       return _StickyHeaderControllerWidget(
         controller: controller,
         child: Stack(
+          clipBehavior: Clip.hardEdge,
           children: <Widget>[
             NotificationListener<ScrollEndNotification>(
               onNotification: (notification) {

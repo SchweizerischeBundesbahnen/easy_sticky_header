@@ -32,14 +32,9 @@ class StickyHeaderWidget extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<double>(
-        'pixels', controller.currentPixels,
-        defaultValue: 0.0));
-    properties.add(DiagnosticsProperty<Offset>(
-        'offset', controller.currentOffset,
-        defaultValue: Offset.zero));
-    properties.add(DiagnosticsProperty<StickyHeaderInfo>(
-        'stickyHeaderInfo', controller.currentStickyHeaderInfo,
+    properties.add(DiagnosticsProperty<double>('pixels', controller.currentPixels, defaultValue: 0.0));
+    properties.add(DiagnosticsProperty<Offset>('offset', controller.currentOffset, defaultValue: Offset.zero));
+    properties.add(DiagnosticsProperty<StickyHeaderInfo>('stickyHeaderInfo', controller.currentStickyHeaderInfo,
         defaultValue: null));
     properties.add(DiagnosticsProperty<StickyHeaderInfo>(
         'childStickyHeaderInfo', controller.currentChildStickyHeaderInfo,
@@ -47,8 +42,7 @@ class StickyHeaderWidget extends StatefulWidget {
   }
 }
 
-class _StickyHeaderWidgetState extends State<StickyHeaderWidget>
-    with SingleTickerProviderStateMixin {
+class _StickyHeaderWidgetState extends State<StickyHeaderWidget> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
 
   @override
@@ -95,15 +89,14 @@ class _StickyHeaderWidgetState extends State<StickyHeaderWidget>
       var isHorizontalAxis = widget.controller.isHorizontalAxis;
       var spacing = (widget.controller.isReverse ? -1 : 1) * widget.spacing;
       return Stack(
+        clipBehavior: Clip.hardEdge,
         children: <Widget>[
           Positioned(
-            left: widget.controller.currentOffset.dx +
-                (isHorizontalAxis ? spacing : 0.0),
-            top: widget.controller.currentOffset.dy +
-                (isHorizontalAxis ? 0.0 : spacing),
+            left: widget.controller.currentOffset.dx + (isHorizontalAxis ? spacing : 0.0),
+            top: widget.controller.currentOffset.dy + (isHorizontalAxis ? 0.0 : spacing),
             right: isHorizontalAxis ? null : 0.0,
             bottom: isHorizontalAxis ? 0.0 : null,
-            child: Container(clipBehavior: Clip.hardEdge, child: stickyHeaderInfo.widget),
+            child: stickyHeaderInfo.widget,
           ),
         ],
       );
@@ -120,8 +113,7 @@ class _StickyHeaderWidgetState extends State<StickyHeaderWidget>
   /// it feels like part of the scrolling widget.
   void _onPanUpdate(DragUpdateDetails details) {
     widget.controller.scrollPosition?.jumpTo(widget.controller.currentPixels +
-        (widget.controller.isReverse ? 1.0 : -1.0) *
-            widget.controller.getComponent(details.delta));
+        (widget.controller.isReverse ? 1.0 : -1.0) * widget.controller.getComponent(details.delta));
   }
 
   /// After the user stops dragging the sticky header widget, keep the same
@@ -131,10 +123,8 @@ class _StickyHeaderWidgetState extends State<StickyHeaderWidget>
     if (scrollPosition != null) {
       // Velocity limit.
       var velocity = (widget.controller.isReverse ? 1.0 : -1.0) *
-          widget.controller.getComponent(
-              details.velocity.clampMagnitude(0, 1000).pixelsPerSecond);
-      var simulation = scrollPosition.physics
-          .createBallisticSimulation(scrollPosition, velocity);
+          widget.controller.getComponent(details.velocity.clampMagnitude(0, 1000).pixelsPerSecond);
+      var simulation = scrollPosition.physics.createBallisticSimulation(scrollPosition, velocity);
       // In some cases, physical animation is not required, for example,
       // the velocity is already 0.0 at this time.
       if (simulation != null) {
