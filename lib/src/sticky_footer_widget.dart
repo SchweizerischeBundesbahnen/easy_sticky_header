@@ -104,7 +104,8 @@ class _StickyFooterWidgetState extends State<StickyFooterWidget> with SingleTick
 
   Widget _buildStickyFooter(StickyHeaderInfo? stickyFooterInfo) {
     if (stickyFooterInfo != null) {
-      return Container(decoration: widget.footerDecoration, child: stickyFooterInfo.widget);
+      return Container(
+          decoration: widget.footerDecoration, clipBehavior: Clip.hardEdge, child: stickyFooterInfo.widget);
     }
     return Container();
   }

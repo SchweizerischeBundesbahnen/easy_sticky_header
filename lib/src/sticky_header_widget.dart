@@ -103,7 +103,7 @@ class _StickyHeaderWidgetState extends State<StickyHeaderWidget>
                 (isHorizontalAxis ? 0.0 : spacing),
             right: isHorizontalAxis ? null : 0.0,
             bottom: isHorizontalAxis ? 0.0 : null,
-            child: stickyHeaderInfo.widget,
+            child: Container(clipBehavior: Clip.hardEdge, child: stickyHeaderInfo.widget),
           ),
         ],
       );
